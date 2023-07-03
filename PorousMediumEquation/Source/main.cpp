@@ -27,13 +27,13 @@ void main_main(){
      * SIMULATION PARAMETERS
     ***********************************************************/
 
-    int Nghost = 0;                             // Nghost = number of ghost cells for each array
+    int Nghost = 1;                             // Nghost = number of ghost cells for each array
     int Ncomp = 1;                              // Ncomp = number of components for each array
     int Ncell;                                  // number of cells on each side of the domain
     int MaxGridSize;                            // size of each box (or grid)
     int Nsteps;                                 // total steps in simulation
     int PlotInt;                                // how often to write a plotfile
-    // amrex::Real dt;
+    amrex::Real dt;
 
 
     // inputs parameters
@@ -54,7 +54,7 @@ void main_main(){
         //  If plot_int < 0 then no plot files will be written
         PlotInt = -1;
         pp.query("plot_int",PlotInt);
-        // pp.get("dt", dt);
+        pp.get("dt", dt);
     }
 
 
@@ -78,10 +78,10 @@ void main_main(){
     // Defining a concrete real box
     // amrex::RealBox real_box({AMREX_D_DECL(-1., -1., -1.)}, {AMREX_D_DECL(1., 1., 1.)});
     amrex::RealBox real_box({AMREX_D_DECL(0., 0., 0.)}, 
-                            {AMREX_D_DECL(1., 1., 1.)});
+                            {AMREX_D_DECL(1.0, 1.0, 1.0)});
 
     // periodic in all direction
-    amrex::Array<int,AMREX_SPACEDIM> is_periodic{AMREX_D_DECL(0,0,0)};
+    amrex::Array<int,AMREX_SPACEDIM> is_periodic{AMREX_D_DECL(1,1,1)};
 
     // Update geometry using the above BoxArray and RealBox
     geom.define(domain, real_box, amrex::CoordSys::cartesian, is_periodic);
@@ -102,8 +102,9 @@ void main_main(){
     // *********************************************************
 
     int m = 2;
-    amrex::Real time = 0.001;
+    amrex::Real time = 0.01;
     initU(uNew, geom, m, time);
+
 
 
     /**********************************************************
@@ -111,12 +112,12 @@ void main_main(){
     ***********************************************************/
     // time = starting time in the simulation
 
-    amrex::Real endTime = 1;
+    // amrex::Real cfl = 1;
     // amrex::Real coeff = AMREX_D_TERM(   1./(ds[0]*ds[0]),
     //                            + 1./(ds[1]*ds[1]),
     //                            + 1./(ds[2]*ds[2]) );
     // amrex::Real dt = cfl/(2.0*coeff);
-    amrex::Real dt = (endTime - time)/(Nsteps);
+    // amrex::Real dt = (endTime - time)/(Nsteps);
 
 
     if (PlotInt > 0)
@@ -126,8 +127,7 @@ void main_main(){
         WriteSingleLevelPlotfile(pltfile, uNew, {"u"}, geom, time, 0);
     }
 
-
-        // build the flux multifabs
+    // build the flux multifabs
     amrex::Array<amrex::MultiFab, AMREX_SPACEDIM> flux;
     // loop over number of dimensions for calculate the flux
     for (int dir = 0; dir < AMREX_SPACEDIM; dir++) //dir for direction
@@ -137,6 +137,7 @@ void main_main(){
         edgeBa.surroundingNodes(dir);
         flux[dir].define(edgeBa, dm, 1, 0);
     }
+
 
     // Time solver
     for (int n = 1; n <= Nsteps; ++n)
@@ -150,7 +151,7 @@ void main_main(){
         // Tell the I/O Processor to write out which step we're doing
         amrex::Print() << "Advanced step " << n << "\n";
 
-        // Write a plotfile of the current data (plot_int was defined in the inputs file)
+        //Write a plotfile of the current data (plot_int was defined in the inputs file)
         if (PlotInt > 0 && n%PlotInt == 0)
         {
             const std::string& pltfile = amrex::Concatenate("plt",n,5);

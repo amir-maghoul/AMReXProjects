@@ -22,7 +22,7 @@ void initUKernel(int i, int j, int k, int m, double t0,
 #if (AMREX_SPACEDIM == 2)
         amrex::Real rsquared = ((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))/0.01;
 #elif (AMREX_SPACEDIM == 3)
-        amrex::Real z = probLo(2) + (k + 0.5) * ds[2];
+        amrex::Real z = probLo[2] + (k + 0.5) * ds[2];
         amrex::Real rsquared = ((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)+(z-0.5)*(z-0.5))/0.01;
 #endif
         amrex::Real baren = 0.;
@@ -51,7 +51,7 @@ void compute_flux_y (int i, int j, int k,
                      amrex::Array4<amrex::Real> const& fluxy,
                      amrex::Array4<amrex::Real const> const& phi, amrex::Real dyinv, int m)
 {
-    fluxy(i,j,k) = (std::pow(phi(i,j,k), m) - std::pow(phi(i,j-1,k), m)) * dyinv;
+    fluxy(i,j,k) = (std::pow(phi(i,j,k), m)- std::pow(phi(i,j-1,k), m)) * dyinv;
 }
 
 #if (AMREX_SPACEDIM > 2)

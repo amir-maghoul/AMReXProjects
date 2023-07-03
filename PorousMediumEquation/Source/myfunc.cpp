@@ -64,7 +64,7 @@ void advance (MultiFab& uOld,
         amrex::ParallelFor(zbx,
         [=] AMREX_GPU_DEVICE (int i, int j, int k)
         {
-            compute_flux_z(i,j,k,fluxz,intermediateU,dzinv);
+            compute_flux_z(i, j, k, fluxz, intermediateU, dzinv, m);
         });
 #endif
     }
@@ -111,7 +111,7 @@ void initU(amrex::MultiFab& uNew, amrex::Geometry const& geom, int m, double t0)
     for (MFIter mfi(uNew); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.validbox();
-        auto const& phiNew = uNew.array(mfi);
+        const amrex::Array4<amrex::Real>& phiNew = uNew.array(mfi);
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k)
         {
             initUKernel(i, j, k, m, t0, phiNew, ds, probLo);
